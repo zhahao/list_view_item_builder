@@ -1,6 +1,3 @@
-/// @author : 查昊
-/// @date : 2019.05.08
-
 library list_view_item_builder;
 
 import 'package:flutter/material.dart';
@@ -21,9 +18,9 @@ typedef ListViewItemOnTapCallback = void Function(
 typedef ListViewItemShouldTapCallback = bool Function(
     BuildContext context, int section, int index);
 
-///  ListView.builder的item构造器
-///  example:
-///  1.创建一个ListViewItemBuilder实例
+///  The item builder of the listView.
+///  Example:
+///  1.Create an instance of the ListViewItemBuilder
 ///  _itemBuilder = ListViewItemBuilder(
 ///        rowCountBuilder: (section) => 10,
 ///        itemsBuilder: (BuildContext context, int section, int index) {
@@ -34,44 +31,44 @@ typedef ListViewItemShouldTapCallback = bool Function(
 ///                    },
 ///        );
 ///
-/// 2.将_itemBuilder的itemBuilder和itemCount传值给ListView
+/// 2.Pass the values of itemBuilder and itemCount of _itemBuilder to the ListView
 ///  ListView.builder(
 ///      itemBuilder: _itemBuilder.itemBuilder,
 ///      itemCount: _itemBuilder.itemCount,
 ///    );
 ///
 class ListViewItemBuilder {
-  /// 总共有多少个section,如果为null.默认1个
+  /// How many sections are there in total. If null. Default is 1 section.
   ListViewSectionCountBuilder sectionCountBuilder;
 
-  /// 每一个section有多少行
+  /// How many rows are in each section.
   ListViewRowCountBuilder rowCountBuilder;
 
-  /// 每一个section的item的构建
+  /// Builder of items for each section.
   ListViewItemWidgetBuilder itemsBuilder;
 
-  /// 每一个section的header构建,默认null
+  /// Header for each section builder, null by default.
   ListViewReusableWidgetBuilder headerBuilder;
 
-  /// 每一个section的footer构建,默认null
+  /// Footer for each section builder, null by default.
   ListViewReusableWidgetBuilder footerBuilder;
 
-  /// 点击了item的回调,默认null.
-  /// 如果为null,则所有item不能点击,没有点击的波纹效果
+  /// The item callback is OnTaped, which defaults to null.
+  /// If it is null, all items cannot be clicked, and there is no ripple effect
   ListViewItemOnTapCallback itemOnTap;
 
-  /// 是否可以点击item
-  /// 如果itemOnTap == null,则都不可点击
-  /// 如果itemOnTap != null,则根据itemShouldTap的返回值决定单个item是否可以点击.
+  /// Determines whether the item callback can be clicked on.
+  /// If itemOnTap == null, none of them are clickable.
+  /// If itemOnTap! = null, the return value of itemShouldTap determines whether an item can be clicked or not.
   ListViewItemShouldTapCallback itemShouldTap;
 
-  /// 整个listView的头部widget,默认null.
+  /// The header widget for the entire listView, which defaults to null.
   Widget headerWidget;
 
-  /// 整个listView的底部widget,默认null.
+  /// The footer widget for the entire listView, which defaults to null.
   Widget footerWidget;
 
-  /// 获取listView的Context
+  /// Gets the Context of the listView.
   BuildContext get listViewContext => _listViewContext;
 
   /// listViewContext
@@ -94,12 +91,10 @@ class ListViewItemBuilder {
         itemShouldTap = itemShouldTap ?? ListViewItemBuilder._itemShouldTap,
         super();
 
-  /// 获取item的count
   int get itemCount {
     return _iterateItems(false, null) as int;
   }
 
-  /// 构建item
   Widget itemBuilder(BuildContext context, int index) {
     _listViewContext = context;
     return _iterateItems(

@@ -39,7 +39,7 @@ class _QListViewTest extends State<QListViewTest> {
   }
 
   void _itemOnTap(BuildContext context, int section, int index) {
-    print('点击了section: ${section.toString()},index:${index.toString()}');
+    print('clicked: section: ${section.toString()},index:${index.toString()}');
   }
 
   Widget _itemsBuilder(BuildContext context, int section, int index) {

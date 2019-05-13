@@ -1,7 +1,11 @@
 ## 0.0.1
 
-* 首次发布,详情见使用方式
+* First release, see usage for details.
 
 ## 0.0.2
 
-* 添加example
+* Added example
+
+## 0.3.0
+
+Modified comments
