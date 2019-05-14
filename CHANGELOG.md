@@ -4,8 +4,11 @@
 
 ## 0.0.2
 
-* Added example
+* Added example.
 
 ## 0.3.0
 
-Modified comments
+* Modified comments.
+
+## 0.4.0
+* Fixed bug.

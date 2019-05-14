@@ -75,8 +75,8 @@ class ListViewItemBuilder {
   BuildContext _listViewContext;
 
   ListViewItemBuilder({
-    @required this.rowCountBuilder,
-    @required this.itemsBuilder,
+    this.rowCountBuilder,
+    this.itemsBuilder,
     ListViewSectionCountBuilder sectionCountBuilder,
     ListViewItemShouldTapCallback itemShouldTap,
     this.headerBuilder,
@@ -84,9 +84,7 @@ class ListViewItemBuilder {
     this.headerWidget,
     this.footerWidget,
     this.itemOnTap,
-  })  : assert(rowCountBuilder != null),
-        assert(itemsBuilder != null),
-        sectionCountBuilder =
+  })  : sectionCountBuilder =
             sectionCountBuilder ?? ListViewItemBuilder._sectionCountBuilder,
         itemShouldTap = itemShouldTap ?? ListViewItemBuilder._itemShouldTap,
         super();
@@ -104,6 +102,9 @@ class ListViewItemBuilder {
   }
 
   dynamic _iterateItems(bool getWidget, int index) {
+    assert(rowCountBuilder != null);
+    assert(itemsBuilder != null);
+
     int section = sectionCountBuilder();
 
     int count = 0;
@@ -118,8 +119,11 @@ class ListViewItemBuilder {
     for (int i = 0; i < section; i++) {
       // header
       count++;
-      if (getWidget && headerBuilder != null) {
-        var header = headerBuilder(_listViewContext, i);
+      if (getWidget) {
+        var header;
+        if (headerBuilder != null) {
+          header = headerBuilder(_listViewContext, i);
+        }
         if (count == (index + 1)) {
           return header ??
               Container(
@@ -143,8 +147,12 @@ class ListViewItemBuilder {
 
       // footer
       count++;
-      if (getWidget && footerBuilder != null) {
-        var footer = footerBuilder(_listViewContext, i);
+      if (getWidget) {
+        var footer;
+        if (footerBuilder != null) {
+          footer = footerBuilder(_listViewContext, i);
+        }
+
         if (count == index + 1) {
           return footer ??
               Container(
