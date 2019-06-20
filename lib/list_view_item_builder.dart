@@ -18,6 +18,8 @@ typedef ListViewItemOnTapCallback = void Function(
 typedef ListViewItemShouldTapCallback = bool Function(
     BuildContext context, int section, int index);
 
+typedef ListViewWidgetBuilder = Widget Function(BuildContext context);
+
 ///  The item builder of the listView.
 ///  Example:
 ///  1.Create an instance of the ListViewItemBuilder
@@ -48,10 +50,10 @@ class ListViewItemBuilder {
   ListViewItemWidgetBuilder itemsBuilder;
 
   /// Header for each section builder, null by default.
-  ListViewReusableWidgetBuilder headerBuilder;
+  ListViewReusableWidgetBuilder sectionHeaderBuilder;
 
   /// Footer for each section builder, null by default.
-  ListViewReusableWidgetBuilder footerBuilder;
+  ListViewReusableWidgetBuilder sectionFooterBuilder;
 
   /// The item callback is OnTaped, which defaults to null.
   /// If it is null, all items cannot be clicked, and there is no ripple effect
@@ -62,11 +64,14 @@ class ListViewItemBuilder {
   /// If itemOnTap! = null, the return value of itemShouldTap determines whether an item can be clicked or not.
   ListViewItemShouldTapCallback itemShouldTap;
 
-  /// The header widget for the entire listView, which defaults to null.
-  Widget headerWidget;
+  /// The header widget builder for the entire listView, which defaults to null.
+  ListViewWidgetBuilder headerWidgetBuilder;
 
-  /// The footer widget for the entire listView, which defaults to null.
-  Widget footerWidget;
+  /// The footer widget builder for the entire listView, which defaults to null.
+  ListViewWidgetBuilder footerWidgetBuilder;
+
+  /// The load more widget builder for the entire listView, which defaults to null.
+  ListViewWidgetBuilder loadMoreWidgetBuilder;
 
   /// Gets the Context of the listView.
   BuildContext get listViewContext => _listViewContext;
@@ -79,10 +84,11 @@ class ListViewItemBuilder {
     this.itemsBuilder,
     ListViewSectionCountBuilder sectionCountBuilder,
     ListViewItemShouldTapCallback itemShouldTap,
-    this.headerBuilder,
-    this.footerBuilder,
-    this.headerWidget,
-    this.footerWidget,
+    this.sectionHeaderBuilder,
+    this.sectionFooterBuilder,
+    this.headerWidgetBuilder,
+    this.footerWidgetBuilder,
+    this.loadMoreWidgetBuilder,
     this.itemOnTap,
   })  : sectionCountBuilder =
             sectionCountBuilder ?? ListViewItemBuilder._sectionCountBuilder,
@@ -109,10 +115,13 @@ class ListViewItemBuilder {
 
     int count = 0;
 
-    if (headerWidget != null) {
-      count += 1;
-      if (getWidget && index == 0) {
-        return headerWidget;
+    if (headerWidgetBuilder != null) {
+      var headerWidget = headerWidgetBuilder(_listViewContext);
+      if (headerWidget != null) {
+        count += 1;
+        if (getWidget && index == 0) {
+          return headerWidget;
+        }
       }
     }
 
@@ -120,12 +129,12 @@ class ListViewItemBuilder {
       // header
       count++;
       if (getWidget) {
-        var header;
-        if (headerBuilder != null) {
-          header = headerBuilder(_listViewContext, i);
+        var sectionHeader;
+        if (sectionHeaderBuilder != null) {
+          sectionHeader = sectionHeaderBuilder(_listViewContext, i);
         }
         if (count == (index + 1)) {
-          return header ??
+          return sectionHeader ??
               Container(
                 height: 0,
                 color: Colors.transparent,
@@ -148,13 +157,13 @@ class ListViewItemBuilder {
       // footer
       count++;
       if (getWidget) {
-        var footer;
-        if (footerBuilder != null) {
-          footer = footerBuilder(_listViewContext, i);
+        var sectionFooter;
+        if (sectionFooterBuilder != null) {
+          sectionFooter = sectionFooterBuilder(_listViewContext, i);
         }
 
         if (count == index + 1) {
-          return footer ??
+          return sectionFooter ??
               Container(
                 height: 0,
                 color: Colors.transparent,
@@ -162,10 +171,39 @@ class ListViewItemBuilder {
         }
       }
     }
-    if (footerWidget != null) {
-      count += 1;
-      if (getWidget) {
+
+    Widget footerWidget;
+    if (footerWidgetBuilder != null) {
+      footerWidget = footerWidgetBuilder(_listViewContext);
+      if (footerWidget != null) {
+        count += 1;
+      }
+    }
+
+    Widget loadMoreWidget;
+    if (loadMoreWidgetBuilder != null) {
+      loadMoreWidget = loadMoreWidgetBuilder(_listViewContext);
+      if (loadMoreWidget != null) {
+        count += 1;
+      }
+    }
+
+    if (getWidget) {
+      if (footerWidget != null && loadMoreWidget != null) {
+        if (count == index + 2) {
+          return footerWidget;
+        } else {
+          return loadMoreWidget;
+        }
+      } else if (footerWidget != null && loadMoreWidget == null) {
         return footerWidget;
+      } else if (footerWidget == null && loadMoreWidget != null) {
+        return loadMoreWidget;
+      } else {
+        return Container(
+          height: 0,
+          color: Colors.transparent,
+        );
       }
     }
 

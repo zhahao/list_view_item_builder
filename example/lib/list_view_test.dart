@@ -13,15 +13,20 @@ class _QListViewTest extends State<QListViewTest> {
   void initState() {
     super.initState();
     _itemBuilder = ListViewItemBuilder(
-        rowCountBuilder: (section) => 5,
-        sectionCountBuilder: () => 2,
-        sectionHeaderBuilder: _headerBuilder,
-        sectionFooterBuilder: _footerBuilder,
-        itemsBuilder: _itemsBuilder,
-        itemOnTap: _itemOnTap,
-        itemShouldTap: _itemShouldTap,
-        headerWidgetBuilder: (_) => _widgetBuilder('HeaderWidget', Colors.green, height: 80),
-        footerWidgetBuilder: (_) => _widgetBuilder('FooterWidget', Colors.green, height: 80));
+      rowCountBuilder: (section) => 5,
+      sectionCountBuilder: () => 2,
+      sectionHeaderBuilder: _headerBuilder,
+      sectionFooterBuilder: _footerBuilder,
+      itemsBuilder: _itemsBuilder,
+      itemOnTap: _itemOnTap,
+      itemShouldTap: _itemShouldTap,
+      headerWidgetBuilder: (ctx) =>
+          _widgetBuilder('HeaderWidget', Colors.green, height: 80),
+      footerWidgetBuilder: (ctx) =>
+          _widgetBuilder('FooterWidget', Colors.green, height: 80),
+      loadMoreWidgetBuilder: (ctx) =>
+          _widgetBuilder('LoadMoreWidget', Colors.lightBlue, height: 80),
+    );
   }
 
   @override

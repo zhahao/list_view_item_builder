@@ -39,10 +39,10 @@ ListViewRowCountBuilder rowCountBuilder;
 ListViewItemWidgetBuilder itemsBuilder;
 
 /// Header for each section builder, null by default.
-ListViewReusableWidgetBuilder headerBuilder;
+ListViewReusableWidgetBuilder sectionHeaderBuilder;
 
 /// Footer for each section builder, null by default.
-ListViewReusableWidgetBuilder footerBuilder;
+ListViewReusableWidgetBuilder sectionFooterBuilder;
 
 /// The item callback is OnTaped, which defaults to null.
 /// If it is null, all items cannot be clicked, and there is no ripple effect
@@ -53,11 +53,11 @@ ListViewItemOnTapCallback itemOnTap;
 /// If itemOnTap! = null, the return value of itemShouldTap determines whether an item can be clicked or not.
 ListViewItemShouldTapCallback itemShouldTap;
 
-/// The header widget for the entire listView, which defaults to null.
-Widget headerWidget;
+/// The header widget builder for the entire listView, which defaults to null.
+ListViewWidgetBuilder headerWidgetBuilder;
 
-/// The footer widget for the entire listView, which defaults to null.
-Widget footerWidget;
+/// The footer widget builder for the entire listView, which defaults to null.
+ListViewWidgetBuilder footerWidgetBuilder;
 
 /// Gets the Context of the listView.
 BuildContext get listViewContext => _listViewContext;
