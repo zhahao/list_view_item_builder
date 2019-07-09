@@ -70,4 +70,4 @@ BuildContext _listViewContext;
 
 ### Screenshot
 
-<img src="https://upload-images.jianshu.io/upload_images/3537150-cc4ba38a9a08b0af.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" width="50%" height="50%" div align=center />
+<img src="https://raw.githubusercontent.com/zhahao/list_view_item_builder/master/example/ScreenShot.png" width="50%" height="50%" div align=center />
