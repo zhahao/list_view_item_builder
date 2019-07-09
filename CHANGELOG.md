@@ -27,3 +27,6 @@
 
 ## [0.8.0]
 * Removed required property limit.
+
+## [0.9.0]
+* Modified example and screenshot.
