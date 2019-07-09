@@ -55,13 +55,13 @@ class _QListViewTest extends State<QListViewTest> {
 
   Widget _headerBuilder(BuildContext context, int section) {
     return _widgetBuilder(
-        'Header:section = ${section.toString()}', Colors.yellow,
+        'SectionHeader:section = ${section.toString()}', Colors.yellow,
         height: 30);
   }
 
   Widget _footerBuilder(BuildContext context, int section) {
     return _widgetBuilder(
-        'Footer:section = ${section.toString()}', Colors.orange,
+        'SectionFooter:section = ${section.toString()}', Colors.orange,
         height: 30);
   }
 
