@@ -28,11 +28,11 @@ Item builder for ListView,to quickly build header & item & footer,and provide ju
       controller: _scrollController,
     );
 
-  // jumpTo:
-  _itemBuilder.jumpTo(int section, int index, {ListViewItemPosition position = ListViewItemPosition.top})
+  // jumpToIndex:
+  _itemBuilder.jumpToIndex(int section, int index, {ListViewItemPosition position = ListViewItemPosition.top})
 
-  // animateTo:
-  _itemBuilder.animateTo(int section, int index,
+  // animateToIndex:
+  _itemBuilder.animateToIndex(int section, int index,
       {@required Duration duration,
       @required Curve curve,
       ListViewItemPosition position = ListViewItemPosition.top})
