@@ -39,8 +39,6 @@ class _QListViewTest extends State<ListViewTestPage> {
   @override
   void initState() {
     super.initState();
-    List list = [1,2];
-    print("${list[10].toString()}");
 
     _itemBuilder = ListViewItemBuilder(
       scrollController: _scrollController,
