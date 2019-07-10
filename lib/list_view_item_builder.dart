@@ -183,13 +183,13 @@ class ListViewItemBuilder {
 
       return true;
     }(),
-        "section:${section.toString()} and index:${index.toString()} was beyond range of listView");
+        "section:${section.toString()} index:${index.toString()} was beyond bounds");
 
-    /// current max visible item position
+    /// Current max visible item position
     int maxSection = _sectionHeaderIndex;
     int maxIndex = _sectionHeaderIndex;
 
-    double itemsHeight = 0.0;
+    double itemsTotalHeight = 0.0;
     double targetItemHeight = 0.0;
     double targetItemTop = 0;
 
@@ -199,12 +199,12 @@ class ListViewItemBuilder {
       var cacheIndex = int.parse(keys.last);
       var itemHeight = height ?? 0;
 
-      /// find max maxSection and maxIndex
+      /// Find max section and max index
       if (cacheSection > maxSection ||
           (cacheSection == maxSection && cacheIndex > maxIndex)) {
         maxSection = cacheSection;
         maxIndex = cacheIndex;
-        itemsHeight += itemHeight;
+        itemsTotalHeight += itemHeight;
       }
 
       if (cacheSection < section ||
@@ -248,7 +248,7 @@ class ListViewItemBuilder {
 
       int currentCacheIndex = 0;
       double tryPixel = 1;
-      double tryOffset = itemsHeight - listViewHeight;
+      double tryOffset = itemsTotalHeight - listViewHeight;
       bool isTargetIndex = false;
       int targetKeyIndex = invisibleKeys.indexOf(targetKey);
 
@@ -291,13 +291,13 @@ class ListViewItemBuilder {
         }
         currentCacheIndex = _currentCacheIndex;
 
-        itemsHeight += nextHeights;
+        itemsTotalHeight += nextHeights;
         currentCacheIndex++;
-        tryOffset = itemsHeight - listViewHeight;
+        tryOffset = itemsTotalHeight - listViewHeight;
       }
 
       return scrollController.position.moveTo(
-          _calculateOffset(itemsHeight, targetItemHeight, position: position));
+          _calculateOffset(itemsTotalHeight, targetItemHeight, position: position));
     }
   }
 

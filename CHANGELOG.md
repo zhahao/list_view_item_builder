@@ -32,4 +32,4 @@
 * Modified example and screenshot.
 
 ## [1.0.0]
-* Provided jumpTo(section,index) and animateTo(section,index,animation) functions. 
+* Added jumpTo(section,index) and animateTo(section,index,animation) functions. 

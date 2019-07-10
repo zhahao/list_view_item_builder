@@ -39,6 +39,9 @@ class _QListViewTest extends State<ListViewTestPage> {
   @override
   void initState() {
     super.initState();
+    List list = [1,2];
+    print("${list[10].toString()}");
+
     _itemBuilder = ListViewItemBuilder(
       scrollController: _scrollController,
       rowCountBuilder: (section) => 10,
@@ -149,7 +152,7 @@ class _QListViewTest extends State<ListViewTestPage> {
 
   Widget _itemsBuilder(BuildContext context, int section, int index) {
     return _widgetBuilder(
-        'Item:section=${section.toString()},index=${index.toString()},canTap:${_itemShouldTap(context,section,index).toString()}',
+        'Item:section=${section.toString()},index=${index.toString()},canTap:${_itemShouldTap(context, section, index).toString()}',
         Colors.white70,
         height: 50);
   }
