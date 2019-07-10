@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'list_view_test.dart';
+import 'package:list_view_item_builder/list_view_item_builder.dart';
 
 void main() => runApp(MyApp());
 
@@ -8,58 +8,173 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: MyHomePage(title: 'list_view_item_builder example'),
-    );
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: Scaffold(
+            appBar: AppBar(
+              title: Text('list_view_item_builder example'),
+            ),
+            body: ListViewTestPage()));
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
+class ListViewTestPage extends StatefulWidget {
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  State<StatefulWidget> createState() => _QListViewTest();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _QListViewTest extends State<ListViewTestPage> {
+  ListViewItemBuilder _itemBuilder;
+  ScrollController _scrollController = ScrollController();
+
+  TextEditingController _sectionTextEditingController =
+      TextEditingController(text: "0");
+  TextEditingController _indexTextEditingController =
+      TextEditingController(text: "0");
+
+  bool _animate = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _itemBuilder = ListViewItemBuilder(
+      scrollController: _scrollController,
+      rowCountBuilder: (section) => 10,
+      sectionCountBuilder: () => 3,
+      sectionHeaderBuilder: _headerBuilder,
+      sectionFooterBuilder: _footerBuilder,
+      itemsBuilder: _itemsBuilder,
+      itemOnTap: _itemOnTap,
+      itemShouldTap: _itemShouldTap,
+      headerWidgetBuilder: (ctx) =>
+          _widgetBuilder('HeaderWidget', Colors.green, height: 80),
+      footerWidgetBuilder: (ctx) =>
+          _widgetBuilder('FooterWidget', Colors.green, height: 80),
+      loadMoreWidgetBuilder: (ctx) =>
+          _widgetBuilder('LoadMoreWidget', Colors.lightBlue, height: 80),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+    return Column(
+      children: <Widget>[
+        _jumpToWidget(),
+        Expanded(
+            child: ListView.builder(
+          shrinkWrap: true,
+          itemBuilder: _itemBuilder.itemBuilder,
+          itemCount: _itemBuilder.itemCount,
+          padding: const EdgeInsets.all(0),
+          controller: _scrollController,
+        ))
+      ],
+    );
+  }
+
+  Widget _jumpToWidget() {
+    return Container(
+      color: Colors.red,
+      height: 50,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Container(
+            child: FlatButton(
+                onPressed: () {
+                  FocusScope.of(context).requestFocus(FocusNode());
+                  var section = int.parse(_sectionTextEditingController.text);
+                  var index = int.parse(_indexTextEditingController.text);
+                  if (_animate) {
+                    _itemBuilder.animateTo(section, index,
+                        duration: Duration(seconds: 1),
+                        curve: Curves.easeInOut);
+                  } else {
+                    _itemBuilder.jumpTo(section, index);
+                  }
+                },
+                child: Text(
+                  "jumpTo",
+                  style: TextStyle(fontSize: 16),
+                )),
+          ),
+          Text(
+            "animate",
+            style: TextStyle(fontSize: 16),
+          ),
+          Checkbox(
+            value: _animate,
+            onChanged: (value) {
+              setState(() {
+                _animate = value;
+              });
+            },
+          ),
+          _buildInputWidget("section:", _sectionTextEditingController),
+          _buildInputWidget("index:", _indexTextEditingController),
+        ],
       ),
-      body: QListViewTest()
+    );
+  }
+
+  Widget _buildInputWidget(String title, TextEditingController controller) {
+    return Container(
+      child: Row(
+        children: <Widget>[
+          Text(
+            title,
+            style: TextStyle(fontSize: 16),
+          ),
+          Container(
+            width: 30,
+            child: TextField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  bool _itemShouldTap(BuildContext context, int section, int index) {
+    return index != 0;
+  }
+
+  void _itemOnTap(BuildContext context, int section, int index) {
+    print('clicked: section: ${section.toString()},index:${index.toString()}');
+  }
+
+  Widget _itemsBuilder(BuildContext context, int section, int index) {
+    return _widgetBuilder(
+        'Item:section=${section.toString()},index=${index.toString()},canTap:${_itemShouldTap(context,section,index).toString()}',
+        Colors.white70,
+        height: 50);
+  }
+
+  Widget _headerBuilder(BuildContext context, int section) {
+    return _widgetBuilder(
+        'SectionHeader:section = ${section.toString()}', Colors.yellow,
+        height: 30);
+  }
+
+  Widget _footerBuilder(BuildContext context, int section) {
+    return _widgetBuilder(
+        'SectionFooter:section = ${section.toString()}', Colors.orange,
+        height: 30);
+  }
+
+  Widget _widgetBuilder(String text, Color color, {double height}) {
+    return Container(
+      height: height ?? 44,
+      color: color,
+      alignment: Alignment.center,
+      child: Text(
+        text,
+        style: TextStyle(color: Colors.black, fontSize: 18),
+      ),
     );
   }
 }
