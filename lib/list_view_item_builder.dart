@@ -57,11 +57,11 @@ const int _sectionHeaderIndex = -1;
 ///      controller: _scrollController,
 ///    );
 ///
-///  // jumpToIndex:
-///  _itemBuilder.jumpToIndex(int section, int index, {ListViewItemPosition position = ListViewItemPosition.top})
+///  // jumpTo:
+///  _itemBuilder.jumpTo(int section, int index, {ListViewItemPosition position = ListViewItemPosition.top})
 ///
-///  // animateToIndex:
-///  _itemBuilder.animateToIndex(int section, int index,
+///  // animateTo:
+///  _itemBuilder.animateTo(int section, int index,
 ///      {@required Duration duration,
 ///      @required Curve curve,
 ///      ListViewItemPosition position = ListViewItemPosition.top})
@@ -69,7 +69,7 @@ const int _sectionHeaderIndex = -1;
 /// {@end-tool}
 class ListViewItemBuilder {
   /// listView scrollController
-  /// If you want to use [animateToIndex] or [jumpToIndex] ,scrollController must not be null.
+  /// If you want to use [animateTo] or [jumpTo] ,scrollController must not be null.
   ScrollController scrollController;
 
   /// How many sections are there in total. If null, Default is 1 section.
@@ -148,26 +148,26 @@ class ListViewItemBuilder {
 
   /// Jumps the scroll position from its current value to the given section and index.
   /// [scrollController] must not be null.
-  Future<void> jumpToIndex(int section, int index,
+  Future<void> jumpTo(int section, int index,
       {ListViewItemPosition position = ListViewItemPosition.top}) async {
-    return _jumpToIndex(section, index, position: position);
+    return _jumpTo(section, index, position: position);
   }
 
   /// Animates the position from its current value to the given section and index.
   /// [scrollController] must not be null.
-  Future<void> animateToIndex(int section, int index,
+  Future<void> animateTo(int section, int index,
       {@required Duration duration,
       @required Curve curve,
       ListViewItemPosition position = ListViewItemPosition.top}) async {
     var startOffset = scrollController.offset;
-    await _jumpToIndex(section, index, position: position);
+    await _jumpTo(section, index, position: position);
     var endOffset = scrollController.offset;
     await scrollController.position.moveTo(startOffset);
     return scrollController.animateTo(endOffset,
         duration: duration, curve: curve);
   }
 
-  Future<void> _jumpToIndex(int section, int index,
+  Future<void> _jumpTo(int section, int index,
       {ListViewItemPosition position = ListViewItemPosition.top}) async {
     assert(section != null && index != null);
     assert(scrollController != null);

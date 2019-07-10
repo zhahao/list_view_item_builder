@@ -91,15 +91,15 @@ class _QListViewTest extends State<ListViewTestPage> {
                   var section = int.parse(_sectionTextEditingController.text);
                   var index = int.parse(_indexTextEditingController.text);
                   if (_animate) {
-                    _itemBuilder.animateToIndex(section, index,
+                    _itemBuilder.animateTo(section, index,
                         duration: Duration(seconds: 1),
                         curve: Curves.easeInOut);
                   } else {
-                    _itemBuilder.jumpToIndex(section, index);
+                    _itemBuilder.jumpTo(section, index);
                   }
                 },
                 child: Text(
-                  "jumpToIndex",
+                  "jumpTo",
                   style: TextStyle(fontSize: 16),
                 )),
           ),
