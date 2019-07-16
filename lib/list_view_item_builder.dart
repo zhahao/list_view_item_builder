@@ -32,6 +32,8 @@ typedef ListViewWidgetBuilder = Widget Function(BuildContext context);
 enum ListViewItemPosition { top, middle, bottom }
 
 const int _sectionHeaderIndex = -1;
+const String _footerCacheKey = "footer";
+const String _loadMoreCacheKey = "loadMore";
 
 ///  Usage:
 ///  1.Create an instance of the ListViewItemBuilder.
@@ -69,6 +71,7 @@ const int _sectionHeaderIndex = -1;
 /// {@end-tool}
 class ListViewItemBuilder {
   /// listView scrollController
+  ///
   /// If you want to use [animateTo] or [jumpTo] ,scrollController must not be null.
   ScrollController scrollController;
 
@@ -88,10 +91,12 @@ class ListViewItemBuilder {
   ListViewReusableWidgetBuilder sectionFooterBuilder;
 
   /// The item callback is OnTaped, which defaults to null.
+  ///
   /// If it is null, all items cannot be clicked, and there is no ripple effect
   ListViewItemOnTapCallback itemOnTap;
 
   /// Determines whether the item callback can be clicked on.
+  ///
   /// If itemOnTap == null, none of them are clickable.
   /// If itemOnTap != null, the return value of itemShouldTap determines whether an item can be clicked or not.
   ListViewItemShouldTapCallback itemShouldTap;
@@ -147,6 +152,7 @@ class ListViewItemBuilder {
   }
 
   /// Jumps the scroll position from its current value to the given section and index.
+  ///
   /// [scrollController] must not be null.
   Future<void> jumpTo(int section, int index,
       {ListViewItemPosition position = ListViewItemPosition.top}) async {
@@ -154,6 +160,7 @@ class ListViewItemBuilder {
   }
 
   /// Animates the position from its current value to the given section and index.
+  ///
   /// [scrollController] must not be null.
   Future<void> animateTo(int section, int index,
       {@required Duration duration,
@@ -191,10 +198,14 @@ class ListViewItemBuilder {
 
     double itemsTotalHeight = 0.0;
     double targetItemHeight = 0.0;
-    double targetItemTop = 0;
+    double targetItemTop = 0.0;
+
+    var listViewHeight =
+        _listViewContext?.findRenderObject()?.paintBounds?.size?.height;
 
     _itemsHeightCache.forEach((key, height) {
       var keys = key.split("+");
+      if (keys == null || keys.length != 2) return;
       var cacheSection = int.parse(keys.first);
       var cacheIndex = int.parse(keys.last);
       var itemHeight = height ?? 0;
@@ -219,15 +230,14 @@ class ListViewItemBuilder {
 
     /// Target item is visible,we can get it's size info.
     if (section < maxSection || (section == maxSection && index < maxIndex)) {
-      return scrollController.position.moveTo(_calculateOffset(
-          targetItemTop, targetItemHeight,
-          position: position));
+      return scrollController.jumpTo(
+        _calculateOffset(targetItemTop, targetItemHeight,
+            position: position, listViewHeight: listViewHeight),
+      );
     }
 
     /// Target item is invisible,It hasn't been laid out yet.
     else {
-      var listViewHeight =
-          _listViewContext?.findRenderObject()?.paintBounds?.size?.height;
       var invisibleKeys = [];
 
       var totalSectionCount = sectionCountBuilder();
@@ -296,8 +306,15 @@ class ListViewItemBuilder {
         tryOffset = itemsTotalHeight - listViewHeight;
       }
 
-      return scrollController.position.moveTo(
-          _calculateOffset(itemsTotalHeight, targetItemHeight, position: position));
+      Future<void> _scrollToTargetPosition() async {
+        return scrollController.position.moveTo(_calculateOffset(
+            itemsTotalHeight, targetItemHeight,
+            position: position, listViewHeight: listViewHeight));
+      }
+
+      await _scrollToTargetPosition();
+      await SchedulerBinding.instance.endOfFrame;
+      return _scrollToTargetPosition();
     }
   }
 
@@ -400,7 +417,12 @@ class ListViewItemBuilder {
 
     Widget footerWidget;
     if (footerWidgetBuilder != null) {
-      footerWidget = footerWidgetBuilder(_listViewContext);
+      footerWidget = _ListViewItemContainer(
+        canTap: false,
+        cacheKey: _footerCacheKey,
+        itemHeightCache: _itemsHeightCache,
+        child: footerWidgetBuilder(_listViewContext),
+      );
       if (footerWidget != null) {
         count += 1;
       }
@@ -408,7 +430,12 @@ class ListViewItemBuilder {
 
     Widget loadMoreWidget;
     if (loadMoreWidgetBuilder != null) {
-      loadMoreWidget = loadMoreWidgetBuilder(_listViewContext);
+      loadMoreWidget = _ListViewItemContainer(
+        canTap: false,
+        cacheKey: _loadMoreCacheKey,
+        itemHeightCache: _itemsHeightCache,
+        child: loadMoreWidgetBuilder(_listViewContext),
+      );
       if (loadMoreWidget != null) {
         count += 1;
       }
@@ -442,17 +469,35 @@ class ListViewItemBuilder {
   }
 
   double _calculateOffset(double top, double itemHeight,
-      {ListViewItemPosition position = ListViewItemPosition.top}) {
+      {ListViewItemPosition position = ListViewItemPosition.top,
+      double listViewHeight}) {
+    double offset = 0.0;
     switch (position) {
       case ListViewItemPosition.top:
-        return top;
+        offset = top;
+        break;
       case ListViewItemPosition.middle:
-        return top + itemHeight * 0.5;
+        offset = top + itemHeight * 0.5;
+        break;
       case ListViewItemPosition.bottom:
-        return top + itemHeight;
+        offset = top + itemHeight;
+        break;
     }
-    return top;
+    if (offset > scrollController.position.maxScrollExtent) {
+      return _min(offset, _maxScrollExtent() - listViewHeight);
+    } else {
+      return offset;
+    }
   }
+
+  /// Instead of [scrollController.position.maxScrollExtent]
+  double _maxScrollExtent() {
+    double height = 0.0;
+    _itemsHeightCache.values.forEach((v) => height += v);
+    return height;
+  }
+
+  _min(double a, double b) => a < b ? a : b;
 
   Widget _buildWidgetContainer(String cacheKey, bool canTap, Widget widget) {
     return _ListViewItemContainer(
@@ -508,6 +553,7 @@ class _ListViewItemContainerState extends State<_ListViewItemContainer> {
                 child: widget.child,
                 onTap: () {
                   var keys = widget.cacheKey.split("+");
+                  if (keys == null || keys.length != 2) return;
 
                   var section = int.parse(keys.first);
                   var index = int.parse(keys.last);
