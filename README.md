@@ -40,45 +40,11 @@ Item builder for ListView,to quickly build header & item & footer,and provide ju
 
 
 
-### Other properties of the ListViewItemBuilder
+### Functions
 
-```
-/// How many sections are there in total. If null. Default is 1 section.
-ListViewSectionCountBuilder sectionCountBuilder;
-
-/// How many rows are in each section.
-ListViewRowCountBuilder rowCountBuilder;
-
-/// Builder of items for each section.
-ListViewItemWidgetBuilder itemsBuilder;
-
-/// Header for each section builder, null by default.
-ListViewReusableWidgetBuilder sectionHeaderBuilder;
-
-/// Footer for each section builder, null by default.
-ListViewReusableWidgetBuilder sectionFooterBuilder;
-
-/// The item callback is OnTaped, which defaults to null.
-/// If it is null, all items cannot be clicked, and there is no ripple effect
-ListViewItemOnTapCallback itemOnTap;
-
-/// Determines whether the item callback can be clicked on.
-/// If itemOnTap == null, none of them are clickable.
-/// If itemOnTap! = null, the return value of itemShouldTap determines whether an item can be clicked or not.
-ListViewItemShouldTapCallback itemShouldTap;
-
-/// The header widget builder for the entire listView, which defaults to null.
-ListViewWidgetBuilder headerWidgetBuilder;
-
-/// The footer widget builder for the entire listView, which defaults to null.
-ListViewWidgetBuilder footerWidgetBuilder;
-
-/// Gets the Context of the listView.
-BuildContext get listViewContext => _listViewContext;
-
-/// listViewContext
-BuildContext _listViewContext;
-```
+- [x] Support header,sectionHeader,item,sectionFooter,footer,loadingMore builder for listView.
+- [x] Support listView jumpTo and animateTo functions by section and index for scroll to position.
+- [x] Support vertical and horizontal scroll direction.
 
 
 
