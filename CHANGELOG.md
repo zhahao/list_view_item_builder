@@ -42,4 +42,8 @@
 
 ## [1.1.0]
 
-* Fixed jumpTo and animateTo function offset bug.  
+* Fixed jumpTo and animateTo function offset bug.
+
+## [1.2.0]
+
+* Support for horizontal scrolling by jumpTo and animateTo.    

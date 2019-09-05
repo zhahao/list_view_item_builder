@@ -12,12 +12,6 @@ typedef ListViewRowCountBuilder = int Function(int section);
 typedef ListViewItemWidgetBuilder = Widget Function(
     BuildContext context, int section, int index);
 
-typedef ListViewItemHeightBuilder = double Function(
-    BuildContext context, int section, int index);
-
-typedef ListViewSectionHeightBuilder = double Function(
-    BuildContext context, int section);
-
 typedef ListViewReusableWidgetBuilder = Widget Function(
     BuildContext context, int section);
 
@@ -75,6 +69,9 @@ class ListViewItemBuilder {
   /// If you want to use [animateTo] or [jumpTo] ,scrollController must not be null.
   ScrollController scrollController;
 
+  /// ListView scrollDirection
+  Axis scrollDirection = Axis.vertical;
+
   /// How many sections are there in total. If null, Default is 1 section.
   ListViewSectionCountBuilder sectionCountBuilder;
 
@@ -117,7 +114,7 @@ class ListViewItemBuilder {
   BuildContext _listViewContext;
 
   /// All item height cache.
-  Map<String, double> _itemsHeightCache = <String, double>{};
+  Map<String, Size> _itemsSizeCache = <String, Size>{};
 
   ListViewItemBuilder(
       {this.rowCountBuilder,
@@ -130,7 +127,8 @@ class ListViewItemBuilder {
       this.footerWidgetBuilder,
       this.loadMoreWidgetBuilder,
       this.itemOnTap,
-      this.scrollController})
+      this.scrollController,
+      this.scrollDirection})
       : sectionCountBuilder =
             sectionCountBuilder ?? ListViewItemBuilder._sectionCountBuilder,
         itemShouldTap = itemShouldTap ?? ListViewItemBuilder._itemShouldTap,
@@ -150,6 +148,8 @@ class ListViewItemBuilder {
       index,
     ) as Widget;
   }
+
+  int convertIndexPathToIndex(int section, int index) => 0;
 
   /// Jumps the scroll position from its current value to the given section and index.
   ///
@@ -201,14 +201,14 @@ class ListViewItemBuilder {
     double targetItemTop = 0.0;
 
     var listViewHeight =
-        _listViewContext?.findRenderObject()?.paintBounds?.size?.height;
+        _getHeight(_listViewContext?.findRenderObject()?.paintBounds?.size);
 
-    _itemsHeightCache.forEach((key, height) {
+    _itemsSizeCache.forEach((key, size) {
       var keys = key.split("+");
       if (keys == null || keys.length != 2) return;
       var cacheSection = int.parse(keys.first);
       var cacheIndex = int.parse(keys.last);
-      var itemHeight = height ?? 0;
+      var itemHeight = _getHeight(size);
 
       /// Find max section and max index
       if (cacheSection > maxSection ||
@@ -284,7 +284,7 @@ class ListViewItemBuilder {
         var _currentCacheIndex = currentCacheIndex;
         for (int i = currentCacheIndex; i < invisibleKeys.length; i++) {
           var nextCacheKey = invisibleKeys[i];
-          var nextHeight = _itemsHeightCache[nextCacheKey];
+          var nextHeight = _getHeight(_itemsSizeCache[nextCacheKey]);
 
           if (nextHeight != null) {
             if (i == targetKeyIndex) {
@@ -420,7 +420,7 @@ class ListViewItemBuilder {
       footerWidget = _ListViewItemContainer(
         canTap: false,
         cacheKey: _footerCacheKey,
-        itemHeightCache: _itemsHeightCache,
+        itemHeightCache: _itemsSizeCache,
         child: footerWidgetBuilder(_listViewContext),
       );
       if (footerWidget != null) {
@@ -433,7 +433,7 @@ class ListViewItemBuilder {
       loadMoreWidget = _ListViewItemContainer(
         canTap: false,
         cacheKey: _loadMoreCacheKey,
-        itemHeightCache: _itemsHeightCache,
+        itemHeightCache: _itemsSizeCache,
         child: loadMoreWidgetBuilder(_listViewContext),
       );
       if (loadMoreWidget != null) {
@@ -462,7 +462,7 @@ class ListViewItemBuilder {
 
     /// Remove extra item keys.
     if (!getWidget) {
-      _itemsHeightCache.removeWhere((k, v) => !itemKeyCache.contains(k));
+      _itemsSizeCache.removeWhere((k, v) => !itemKeyCache.contains(k));
     }
 
     return count;
@@ -493,11 +493,14 @@ class ListViewItemBuilder {
   /// Instead of [scrollController.position.maxScrollExtent]
   double _maxScrollExtent() {
     double height = 0.0;
-    _itemsHeightCache.values.forEach((v) => height += v);
+    _itemsSizeCache.values.forEach((v) => height += _getHeight(v));
     return height;
   }
 
   _min(double a, double b) => a < b ? a : b;
+
+  double _getHeight(Size size) =>
+      (scrollDirection == Axis.vertical ? size?.height : size?.width) ?? 0;
 
   Widget _buildWidgetContainer(String cacheKey, bool canTap, Widget widget) {
     return _ListViewItemContainer(
@@ -506,7 +509,7 @@ class ListViewItemBuilder {
       canTap: canTap,
       itemOnTap: itemOnTap,
       listViewContext: _listViewContext,
-      itemHeightCache: _itemsHeightCache,
+      itemHeightCache: _itemsSizeCache,
     );
   }
 
@@ -525,7 +528,7 @@ class _ListViewItemContainer extends StatefulWidget {
   final ListViewItemOnTapCallback itemOnTap;
   final BuildContext listViewContext;
   final Widget child;
-  final Map<String, double> itemHeightCache;
+  final Map<String, Size> itemHeightCache;
 
   @override
   State<StatefulWidget> createState() => _ListViewItemContainerState();
@@ -545,6 +548,7 @@ class _ListViewItemContainerState extends State<_ListViewItemContainer> {
   Widget build(BuildContext context) {
     return NotificationListener<LayoutChangedNotification>(
       onNotification: (notification) {
+        /// Flutter1.7+ need a return value, otherwise without.
         _saveHeightToCache();
       },
       child: InitialSizeChangedLayoutNotifier(
@@ -570,9 +574,10 @@ class _ListViewItemContainerState extends State<_ListViewItemContainer> {
 
   _saveHeightToCache() {
     if (!mounted) return;
-    var height = context.findRenderObject()?.paintBounds?.height;
-    if (height != null) {
-      widget.itemHeightCache[widget.cacheKey] = height;
+
+    var size = context.findRenderObject()?.paintBounds?.size;
+    if (size != null) {
+      widget.itemHeightCache[widget.cacheKey] = size;
     }
   }
 }

@@ -35,15 +35,38 @@ class _QListViewTest extends State<ListViewTestPage> {
       TextEditingController(text: "0");
 
   bool _animate = false;
+  Axis _scrollDirection = Axis.vertical;
+  bool _scrollDirectionChanged = false;
 
   @override
   void initState() {
     super.initState();
+    _initItemBuilder();
+  }
 
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: <Widget>[
+        _jumpToWidget(),
+        Expanded(
+            child: ListView.builder(
+                shrinkWrap: true,
+                itemBuilder: _itemBuilder.itemBuilder,
+                itemCount: _itemBuilder.itemCount,
+                padding: const EdgeInsets.all(0),
+                controller: _scrollController,
+                scrollDirection: _scrollDirection))
+      ],
+    );
+  }
+
+  _initItemBuilder() {
     _itemBuilder = ListViewItemBuilder(
       scrollController: _scrollController,
+      scrollDirection: _scrollDirection,
       rowCountBuilder: (section) => 10,
-      sectionCountBuilder: () => 3,
+      sectionCountBuilder: () => 30,
       sectionHeaderBuilder: _headerBuilder,
       sectionFooterBuilder: _footerBuilder,
       itemsBuilder: _itemsBuilder,
@@ -58,63 +81,76 @@ class _QListViewTest extends State<ListViewTestPage> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        _jumpToWidget(),
-        Expanded(
-            child: ListView.builder(
-          shrinkWrap: true,
-          itemBuilder: _itemBuilder.itemBuilder,
-          itemCount: _itemBuilder.itemCount,
-          padding: const EdgeInsets.all(0),
-          controller: _scrollController,
-        ))
-      ],
-    );
-  }
-
   Widget _jumpToWidget() {
     return Container(
       color: Colors.red,
-      height: 50,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Column(
         children: <Widget>[
-          Container(
-            child: FlatButton(
-                onPressed: () {
-                  FocusScope.of(context).requestFocus(FocusNode());
-                  var section = int.parse(_sectionTextEditingController.text);
-                  var index = int.parse(_indexTextEditingController.text);
-                  if (_animate) {
-                    _itemBuilder.animateTo(section, index,
-                        duration: Duration(seconds: 1),
-                        curve: Curves.easeInOut);
-                  } else {
-                    _itemBuilder.jumpTo(section, index);
-                  }
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              FlatButton(
+                  onPressed: () {
+                    FocusScope.of(context).requestFocus(FocusNode());
+                    var section = int.parse(_sectionTextEditingController.text);
+                    var index = int.parse(_indexTextEditingController.text);
+                    if (_animate) {
+                      _itemBuilder.animateTo(section, index,
+                          duration: Duration(seconds: 1),
+                          curve: Curves.easeInOut);
+                    } else {
+                      _itemBuilder.jumpTo(section, index);
+                    }
+                  },
+                  child: Text(
+                    "jumpTo",
+                    style: TextStyle(fontSize: 16),
+                  )),
+              Text(
+                "animate",
+                style: TextStyle(fontSize: 16),
+              ),
+              Checkbox(
+                value: _animate,
+                onChanged: (value) {
+                  setState(() {
+                    _animate = value;
+                  });
                 },
-                child: Text(
-                  "jumpTo",
-                  style: TextStyle(fontSize: 16),
-                )),
+              ),
+              Text(
+                "vertical",
+                style: TextStyle(fontSize: 16),
+              ),
+              Checkbox(
+                value: _scrollDirection == Axis.vertical,
+                onChanged: (value) {
+                  setState(() {
+                    if (_scrollDirectionChanged) {
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) => AlertDialog(
+                                title: Text(
+                                    'ScrollDirection only can be changed once'),
+                              ));
+                    } else {
+                      _scrollDirection =
+                          value ? Axis.vertical : Axis.horizontal;
+                      _itemBuilder.scrollDirection = _scrollDirection;
+                    }
+                    _scrollDirectionChanged = true;
+                  });
+                },
+              ),
+            ],
           ),
-          Text(
-            "animate",
-            style: TextStyle(fontSize: 16),
-          ),
-          Checkbox(
-            value: _animate,
-            onChanged: (value) {
-              setState(() {
-                _animate = value;
-              });
-            },
-          ),
-          _buildInputWidget("section:", _sectionTextEditingController),
-          _buildInputWidget("index:", _indexTextEditingController),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              _buildInputWidget("section:", _sectionTextEditingController),
+              _buildInputWidget("index:", _indexTextEditingController),
+            ],
+          )
         ],
       ),
     );
@@ -168,8 +204,10 @@ class _QListViewTest extends State<ListViewTestPage> {
   }
 
   Widget _widgetBuilder(String text, Color color, {double height}) {
+    var size = height ?? 44;
     return Container(
-      height: height ?? 44,
+      height: _scrollDirection == Axis.horizontal ? null : size,
+      width: _scrollDirection == Axis.horizontal ? size : null,
       color: color,
       alignment: Alignment.center,
       child: Text(
